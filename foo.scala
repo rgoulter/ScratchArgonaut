@@ -23,6 +23,25 @@ object MyData {
 }
 
 
+object ArgUtils {
+  // simple things are fine,
+  // but for containers (and e.g. arrays??)
+  // it's not so clear what needs to happen.
+
+  implicit def OptionEncodeJson : EncodeJson[Option[String]] =
+    EncodeJson((op : Option[String]) =>
+//      op match {
+//        case None => jEmptyObject
+//        case Some(s) => ("some" := s) ->: jEmptyObject
+//      }
+      ("some" :=? op) ->?: jEmptyObject)
+
+  implicit def PersonDecodeJson: DecodeJson[Option[String]] =
+    DecodeJson(c =>
+      // ().as[T] is pretty clever
+      (c --\ "some").as[Option[String]]
+    )
+}
 
 
 object Example {
@@ -34,6 +53,14 @@ object Example {
     println("Load myData")
     val j = MyData.load(s)
     println(j)
+    println
+
+    val o1 = Some(3)
+    println("Dumping Opt1")
+    val s2 = o1.asJson.spaces2
+    val j2 = s2.decodeOption[Option[String]]
+    println("load Opt1")
+    println(j2)
     println
   }
 }
